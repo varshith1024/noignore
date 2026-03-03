@@ -272,5 +272,30 @@ router.get("/messages/:friendId", authMiddleware, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+router.get("/pending-requests", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.userId;
 
+    const requests = await prisma.friendRequest.findMany({
+      where: {
+        receiverId: userId,
+        status: "PENDING"
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    res.json(requests);
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 module.exports = router;
